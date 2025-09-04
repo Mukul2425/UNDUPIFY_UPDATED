@@ -15,6 +15,7 @@ const cosineCompare = document.getElementById('cosineCompare');
 const cosineCompareVal = document.getElementById('cosineCompareVal');
 const fuzzyCompare = document.getElementById('fuzzyCompare');
 const fuzzyCompareVal = document.getElementById('fuzzyCompareVal');
+const compareDirBtn = document.getElementById('compareDirBtn');
 
 cosine.addEventListener('input', () => { cosineVal.textContent = Number(cosine.value).toFixed(2); });
 fuzzy.addEventListener('input', () => { fuzzyVal.textContent = Number(fuzzy.value); });
@@ -117,6 +118,56 @@ form.addEventListener('submit', async (e) => {
   } catch (err) {
     console.error(err);
     statusEl.textContent = 'Error: ' + err.message;
+  }
+});
+
+compareDirBtn.addEventListener('click', async () => {
+  const apiUrl = document.getElementById('apiUrlCompare').value.trim();
+  const stopwords = document.getElementById('stopwordsCompare').checked;
+  const model = document.getElementById('modelCompare').value.trim();
+  const queryFile = document.getElementById('queryFile').files[0];
+  const targetZip = document.getElementById('targetZip').files[0];
+  const statusCompareDir = document.getElementById('statusCompareDir');
+  const tableWrap = document.getElementById('compareTableWrap');
+  const table = document.getElementById('compareTable').querySelector('tbody');
+
+  if (!queryFile || !targetZip) {
+    alert('Select a query file and a target ZIP.');
+    return;
+  }
+
+  statusCompareDir.textContent = 'Comparing against directory...';
+  tableWrap.classList.add('hidden');
+  table.innerHTML = '';
+
+  const fd = new FormData();
+  fd.append('query', queryFile);
+  fd.append('target_zip', targetZip);
+  fd.append('remove_stopwords', String(stopwords));
+  fd.append('model', model);
+  fd.append('cosine_threshold', cosineCompare.value);
+  fd.append('fuzzy_threshold', fuzzyCompare.value);
+  fd.append('top_k', '50');
+
+  try {
+    const resp = await fetch(apiUrl + '/compare_dir', { method: 'POST', body: fd });
+    if (!resp.ok) throw new Error(await resp.text());
+    const data = await resp.json();
+    (data.matches || []).forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="border-bottom:1px solid #f0f0f0; padding:6px;">${row.filename}</td>
+        <td style="border-bottom:1px solid #f0f0f0; padding:6px; text-align:right;">${row.cosine_similarity.toFixed(3)}</td>
+        <td style="border-bottom:1px solid #f0f0f0; padding:6px; text-align:right;">${row.levenshtein_ratio}</td>
+        <td style="border-bottom:1px solid #f0f0f0; padding:6px; text-align:center;">${row.is_duplicate ? 'Yes' : 'No'}</td>
+      `;
+      table.appendChild(tr);
+    });
+    tableWrap.classList.remove('hidden');
+    statusCompareDir.textContent = `Found ${data.matches ? data.matches.length : 0} matches (top 50).`;
+  } catch (err) {
+    console.error(err);
+    statusCompareDir.textContent = 'Error: ' + err.message;
   }
 });
 

@@ -160,6 +160,93 @@ async def compare(
 	return result
 
 
+@app.post('/compare_dir')
+async def compare_dir(
+	query: UploadFile = File(...),
+	target_zip: UploadFile = File(...),
+	remove_stopwords: bool = Form(False),
+	model: str = Form("sentence-transformers/all-MiniLM-L6-v2"),
+	cosine_threshold: float = Form(0.9),
+	fuzzy_threshold: int = Form(90),
+	top_k: int = Form(50),
+):
+	timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+	artifacts_dir = os.path.abspath(os.path.join('artifacts', f'compare_dir_{timestamp}'))
+	os.makedirs(artifacts_dir, exist_ok=True)
+
+	q_path = os.path.join(artifacts_dir, query.filename)
+	with open(q_path, 'wb') as out:
+		shutil.copyfileobj(query.file, out)
+
+	z_path = os.path.join(artifacts_dir, target_zip.filename)
+	with open(z_path, 'wb') as out:
+		shutil.copyfileobj(target_zip.file, out)
+
+	# Extract ZIP to folder
+	extract_dir = os.path.join(artifacts_dir, 'unzipped')
+	os.makedirs(extract_dir, exist_ok=True)
+	import zipfile
+	with zipfile.ZipFile(z_path, 'r') as zf:
+		zf.extractall(extract_dir)
+
+	# Collect files
+	allowed_ext = {'.txt', '.pdf', '.docx', '.pptx', '.xlsx', '.csv', '.json', '.jsonl'}
+	candidates = []
+	for root, _, files in os.walk(extract_dir):
+		for name in files:
+			ext = os.path.splitext(name)[1].lower()
+			if ext in allowed_ext:
+				candidates.append(os.path.join(root, name))
+
+	# Extract and normalize
+	from undupify.preprocess import normalize_text
+	q_text = extract_text(q_path)
+	q_norm = normalize_text(q_text, remove_stopwords=remove_stopwords)
+	texts = []
+	file_names = []
+	for path in candidates:
+		try:
+			t = extract_text(path)
+		except Exception:
+			t = ''
+		texts.append(normalize_text(t, remove_stopwords=remove_stopwords))
+		file_names.append(os.path.relpath(path, extract_dir))
+
+	# Compute embeddings and similarities
+	if not texts:
+		return {
+			'timestamp': timestamp,
+			'query_filename': query.filename,
+			'target_zip': target_zip.filename,
+			'matches': []
+		}
+	from undupify.embed import compute_embeddings
+	import numpy as np
+	q_emb, _ = compute_embeddings([q_norm], model)
+	t_emb, _ = compute_embeddings(texts, model)
+
+	from undupify.dedup_near import cosine_similarity
+	from rapidfuzz import fuzz
+	rows = []
+	for i, fname in enumerate(file_names):
+		cos = float(np.dot(q_emb[0], t_emb[i]))
+		lev = int(fuzz.ratio(q_norm, texts[i]))
+		rows.append({
+			'filename': fname,
+			'cosine_similarity': cos,
+			'levenshtein_ratio': lev,
+			'is_duplicate': bool(cos >= cosine_threshold and lev >= fuzzy_threshold)
+		})
+	# Sort by cosine desc, then lev desc
+	rows.sort(key=lambda r: (r['cosine_similarity'], r['levenshtein_ratio']), reverse=True)
+	return {
+		'timestamp': timestamp,
+		'query_filename': query.filename,
+		'target_zip': target_zip.filename,
+		'matches': rows[:int(top_k)]
+	}
+
+
 @app.get('/download')
 def download(path: str):
 	if not os.path.exists(path):

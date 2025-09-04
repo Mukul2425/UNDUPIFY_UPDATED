@@ -86,6 +86,27 @@
           </label>
           <button id="compareBtn" type="submit">Compare</button>
           <div id="statusCompare" class="status"></div>
+
+          <hr style="margin:16px 0; opacity:.3;" />
+          <h3>Compare against directory (ZIP)</h3>
+          <label>Target directory ZIP
+            <input id="targetZip" type="file" accept=".zip" />
+          </label>
+          <button id="compareDirBtn" type="button">Compare vs Directory</button>
+          <div id="statusCompareDir" class="status"></div>
+          <div id="compareTableWrap" class="hidden" style="overflow:auto; max-height:280px;">
+            <table id="compareTable" style="width:100%; border-collapse:collapse;">
+              <thead>
+                <tr>
+                  <th style="text-align:left; border-bottom:1px solid #eee; padding:6px;">File</th>
+                  <th style="text-align:right; border-bottom:1px solid #eee; padding:6px;">Cosine</th>
+                  <th style="text-align:right; border-bottom:1px solid #eee; padding:6px;">Levenshtein</th>
+                  <th style="text-align:center; border-bottom:1px solid #eee; padding:6px;">Duplicate?</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </form>
       </div>
 
