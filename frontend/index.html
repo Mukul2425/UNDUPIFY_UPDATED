@@ -13,7 +13,12 @@
       <p class="muted">Deduplicate text datasets: upload a file (CSV/JSON/TXT or ZIP of files).</p>
 
       <div class="card">
-        <form id="uploadForm">
+        <div class="tabs">
+          <button class="tab active" data-tab="dedupe">Dedupe</button>
+          <button class="tab" data-tab="compare">Compare</button>
+        </div>
+
+        <form id="uploadForm" data-section="dedupe">
           <div class="grid">
             <label>API URL
               <input id="apiUrl" type="text" value="http://127.0.0.1:8000" />
@@ -48,6 +53,40 @@
           <button id="submitBtn" type="submit">Run</button>
         </form>
         <div id="status" class="status"></div>
+
+        <form id="compareForm" class="hidden" data-section="compare">
+          <div class="grid">
+            <label>API URL
+              <input id="apiUrlCompare" type="text" value="http://127.0.0.1:8000" />
+            </label>
+            <label>Remove stopwords
+              <input id="stopwordsCompare" type="checkbox" />
+            </label>
+          </div>
+          <div class="grid">
+            <label>Cosine threshold
+              <input id="cosineCompare" type="range" min="0.5" max="0.99" step="0.01" value="0.9" />
+              <span id="cosineCompareVal">0.90</span>
+            </label>
+            <label>Fuzzy ratio threshold
+              <input id="fuzzyCompare" type="range" min="60" max="100" step="1" value="90" />
+              <span id="fuzzyCompareVal">90</span>
+            </label>
+          </div>
+          <div class="grid">
+            <label>Model
+              <input id="modelCompare" type="text" value="sentence-transformers/all-MiniLM-L6-v2" />
+            </label>
+          </div>
+          <label>Query file
+            <input id="queryFile" type="file" />
+          </label>
+          <label>Target file
+            <input id="targetFile" type="file" />
+          </label>
+          <button id="compareBtn" type="submit">Compare</button>
+          <div id="statusCompare" class="status"></div>
+        </form>
       </div>
 
       <div id="results" class="card hidden">

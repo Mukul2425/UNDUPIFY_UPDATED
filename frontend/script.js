@@ -9,11 +9,35 @@ const cosine = document.getElementById('cosine');
 const cosineVal = document.getElementById('cosineVal');
 const fuzzy = document.getElementById('fuzzy');
 const fuzzyVal = document.getElementById('fuzzyVal');
+const tabs = document.querySelectorAll('.tab');
+const compareForm = document.getElementById('compareForm');
+const cosineCompare = document.getElementById('cosineCompare');
+const cosineCompareVal = document.getElementById('cosineCompareVal');
+const fuzzyCompare = document.getElementById('fuzzyCompare');
+const fuzzyCompareVal = document.getElementById('fuzzyCompareVal');
 
 cosine.addEventListener('input', () => { cosineVal.textContent = Number(cosine.value).toFixed(2); });
 fuzzy.addEventListener('input', () => { fuzzyVal.textContent = Number(fuzzy.value); });
 
 let chart;
+tabs.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabs.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const target = btn.dataset.tab;
+    if (target === 'dedupe') {
+      form.classList.remove('hidden');
+      compareForm.classList.add('hidden');
+    } else {
+      form.classList.add('hidden');
+      compareForm.classList.remove('hidden');
+    }
+  });
+});
+
+cosineCompare.addEventListener('input', () => { cosineCompareVal.textContent = Number(cosineCompare.value).toFixed(2); });
+fuzzyCompare.addEventListener('input', () => { fuzzyCompareVal.textContent = Number(fuzzyCompare.value); });
+
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -93,6 +117,41 @@ form.addEventListener('submit', async (e) => {
   } catch (err) {
     console.error(err);
     statusEl.textContent = 'Error: ' + err.message;
+  }
+});
+
+compareForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const apiUrl = document.getElementById('apiUrlCompare').value.trim();
+  const stopwords = document.getElementById('stopwordsCompare').checked;
+  const model = document.getElementById('modelCompare').value.trim();
+  const queryFile = document.getElementById('queryFile').files[0];
+  const targetFile = document.getElementById('targetFile').files[0];
+  const statusCompare = document.getElementById('statusCompare');
+
+  if (!queryFile || !targetFile) {
+    alert('Select both query and target files.');
+    return;
+  }
+
+  const fd = new FormData();
+  fd.append('query', queryFile);
+  fd.append('target', targetFile);
+  fd.append('remove_stopwords', String(stopwords));
+  fd.append('model', model);
+  fd.append('cosine_threshold', cosineCompare.value);
+  fd.append('fuzzy_threshold', fuzzyCompare.value);
+
+  statusCompare.textContent = 'Comparing...';
+
+  try {
+    const resp = await fetch(apiUrl + '/compare', { method: 'POST', body: fd });
+    if (!resp.ok) throw new Error(await resp.text());
+    const data = await resp.json();
+    statusCompare.textContent = `Cosine: ${data.cosine_similarity.toFixed(3)}, Levenshtein: ${data.levenshtein_ratio}, Duplicate: ${data.is_duplicate}`;
+  } catch (err) {
+    console.error(err);
+    statusCompare.textContent = 'Error: ' + err.message;
   }
 });
 

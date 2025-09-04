@@ -16,6 +16,7 @@ from undupify.dedup_exact import exact_deduplicate
 from undupify.embed import compute_embeddings, build_annoy_index
 from undupify.dedup_near import find_near_duplicates
 from undupify.reporting import write_report
+from undupify.extract import extract_text
 
 
 app = FastAPI(title="UNDUPIFY API")
@@ -106,6 +107,57 @@ async def process(
 	write_report(report, report_path)
 
 	return report
+
+
+@app.post('/compare')
+async def compare(
+	query: UploadFile = File(...),
+	target: UploadFile = File(...),
+	remove_stopwords: bool = Form(False),
+	model: str = Form("sentence-transformers/all-MiniLM-L6-v2"),
+	cosine_threshold: float = Form(0.9),
+	fuzzy_threshold: int = Form(90),
+):
+	# Save both files
+	timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+	artifacts_dir = os.path.abspath(os.path.join('artifacts', f'compare_{timestamp}'))
+	os.makedirs(artifacts_dir, exist_ok=True)
+
+	q_path = os.path.join(artifacts_dir, query.filename)
+	with open(q_path, 'wb') as out:
+		shutil.copyfileobj(query.file, out)
+
+	t_path = os.path.join(artifacts_dir, target.filename)
+	with open(t_path, 'wb') as out:
+		shutil.copyfileobj(target.file, out)
+
+	# Extract text from both
+	q_text = extract_text(q_path)
+	t_text = extract_text(t_path)
+
+	# Normalize and embed
+	import pandas as pd
+	from undupify.preprocess import normalize_text
+	q_norm = normalize_text(q_text, remove_stopwords=remove_stopwords)
+	t_norm = normalize_text(t_text, remove_stopwords=remove_stopwords)
+
+	from undupify.embed import compute_embeddings
+	embeddings, _ = compute_embeddings([q_norm, t_norm], model)
+	from undupify.dedup_near import cosine_similarity
+	cos_sim = cosine_similarity(embeddings[0], embeddings[1])
+
+	from rapidfuzz import fuzz
+	fuzzy = fuzz.ratio(q_norm, t_norm)
+
+	result = {
+		'timestamp': timestamp,
+		'query_filename': query.filename,
+		'target_filename': target.filename,
+		'cosine_similarity': float(cos_sim),
+		'levenshtein_ratio': int(fuzzy),
+		'is_duplicate': bool(cos_sim >= cosine_threshold and fuzzy >= fuzzy_threshold)
+	}
+	return result
 
 
 @app.get('/download')

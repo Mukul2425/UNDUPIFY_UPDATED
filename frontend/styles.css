@@ -16,4 +16,7 @@ button:disabled{opacity:.6;cursor:not-allowed}
 .status{margin-top:8px;color:#333}
 .links a{display:inline-block;margin-right:12px}
 .hidden{display:none}
+.tabs{display:flex;gap:8px;margin-bottom:10px}
+.tab{background:#f1f1f1;border:1px solid #ddd;border-radius:6px;padding:6px 10px;cursor:pointer}
+.tab.active{background:#111;color:#fff;border-color:#111}
 
