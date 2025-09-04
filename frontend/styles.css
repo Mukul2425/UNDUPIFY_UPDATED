@@ -1,0 +1,19 @@
+*{box-sizing:border-box}body{margin:0;font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Arial}
+.container{max-width:960px;margin:24px auto;padding:16px}
+h1{margin:0 0 8px;font-size:28px}
+.muted{color:#555;margin:0 0 16px}
+.card{background:#fff;border:1px solid #eee;border-radius:8px;padding:16px;margin:12px 0;box-shadow:0 2px 10px rgba(0,0,0,0.03)}
+label{display:block;margin:8px 0;color:#222;font-weight:600}
+input[type=text],input[type=number],input[type=range],input[type=file]{width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;margin-top:6px}
+.checkbox{font-weight:500}
+button{background:#111;color:#fff;border:none;border-radius:8px;padding:10px 16px;margin-top:12px;cursor:pointer}
+button:disabled{opacity:.6;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0}
+.kpi{background:#f8f8f8;border:1px solid #eee;border-radius:8px;padding:12px;text-align:center}
+.kpi-num{font-size:22px;font-weight:700}
+.kpi-label{font-size:12px;color:#666}
+.status{margin-top:8px;color:#333}
+.links a{display:inline-block;margin-right:12px}
+.hidden{display:none}
+
