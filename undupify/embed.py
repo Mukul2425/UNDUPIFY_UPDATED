@@ -5,8 +5,12 @@ from sentence_transformers import SentenceTransformer
 from annoy import AnnoyIndex
 
 
+_model_cache: Dict[str, SentenceTransformer] = {}
+
 def compute_embeddings(texts: List[str], model_name: str) -> Tuple[np.ndarray, int]:
-	model = SentenceTransformer(model_name)
+	if model_name not in _model_cache:
+		_model_cache[model_name] = SentenceTransformer(model_name)
+	model = _model_cache[model_name]
 	emb = model.encode(texts, batch_size=64, show_progress_bar=False, convert_to_numpy=True, normalize_embeddings=True)
 	return emb, emb.shape[1]
 

@@ -35,6 +35,13 @@ app.add_middleware(
 )
 
 
+@app.on_event("startup")
+async def startup_event():
+	# Preload the default model to avoid timeout on first request
+	print("Preloading model...")
+	compute_embeddings(["warmup"], "sentence-transformers/all-MiniLM-L6-v2")
+	print("Model preloaded.")
+
 @app.get("/health")
 def health():
 	return {"status": "ok"}
