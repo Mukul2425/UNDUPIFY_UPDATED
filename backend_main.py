@@ -22,7 +22,13 @@ from undupify.extract import extract_text
 app = FastAPI(title="UNDUPIFY API")
 app.add_middleware(
 	CORSMiddleware,
-	allow_origins=["*"],
+	allow_origins=[
+		"https://undupify-updated.vercel.app",
+		"https://undupify-updated.onrender.com",
+		"http://localhost:3000",
+		"http://127.0.0.1:3000",
+		"*"
+	],
 	allow_credentials=True,
 	allow_methods=["*"],
 	allow_headers=["*"],
