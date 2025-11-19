@@ -132,10 +132,145 @@
       <canvas id="chart" height="100"></canvas>
 
       <div id="links" class="links"></div>
-    </div>
-  </div>
+      <!doctype html>
+      <html lang="en">
 
-  <script src="script.js"></script>
-</body>
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>UNDUPIFY</title>
+        <link rel="stylesheet" href="styles.css" />
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+      </head>
 
-</html>
+      <body>
+        <div class="container">
+          <h1>UNDUPIFY</h1>
+          <p class="muted">Deduplicate text datasets: upload a file (CSV/JSON/TXT or ZIP of files).</p>
+
+          <div class="card">
+            <div class="tabs">
+              <button class="tab active" data-tab="dedupe">Dedupe</button>
+              <button class="tab" data-tab="compare">Compare</button>
+            </div>
+
+            <form id="uploadForm" data-section="dedupe">
+              <div class="grid">
+                <label>API URL
+                  <input id="apiUrl" type="text" value="https://undupify-updated.onrender.com" />
+                </label>
+                <label>Text column (optional for CSV/JSON)
+                  <input id="textColumn" type="text" placeholder="text" />
+                </label>
+              </div>
+
+              <div class="grid">
+                <label>Cosine threshold
+                  <input id="cosine" type="range" min="0.5" max="0.99" step="0.01" value="0.9" />
+                  <span id="cosineVal">0.90</span>
+                </label>
+                <label>Fuzzy ratio threshold
+                  <input id="fuzzy" type="range" min="60" max="100" step="1" value="90" />
+                  <span id="fuzzyVal">90</span>
+                </label>
+              </div>
+
+              <div class="grid">
+                <label class="checkbox"><input id="stopwords" type="checkbox" /> Remove stopwords</label>
+                <label>Model
+                  <input id="model" type="text" value="sentence-transformers/all-MiniLM-L6-v2" />
+                </label>
+              </div>
+
+              <label>Upload file or ZIP of files
+                <input id="file" type="file" />
+              </label>
+
+              <button id="submitBtn" type="submit">Run</button>
+            </form>
+            <div id="status" class="status"></div>
+
+            <form id="compareForm" class="hidden" data-section="compare">
+              <div class="grid">
+                <label>API URL
+                  <input id="apiUrlCompare" type="text" value="https://undupify-updated.onrender.com" />
+                </label>
+                <label>Remove stopwords
+                  <input id="stopwordsCompare" type="checkbox" />
+                </label>
+              </div>
+              <div class="grid">
+                <label>Cosine threshold
+                  <input id="cosineCompare" type="range" min="0.5" max="0.99" step="0.01" value="0.9" />
+                  <span id="cosineCompareVal">0.90</span>
+                </label>
+                <label>Fuzzy ratio threshold
+                  <input id="fuzzyCompare" type="range" min="60" max="100" step="1" value="90" />
+                  <span id="fuzzyCompareVal">90</span>
+                </label>
+              </div>
+              <div class="grid">
+                <label>Model
+                  <input id="modelCompare" type="text" value="sentence-transformers/all-MiniLM-L6-v2" />
+                </label>
+              </div>
+              <label>Query file
+                <input id="queryFile" type="file" />
+              </label>
+              <label>Target file
+                <input id="targetFile" type="file" />
+              </label>
+              <button id="compareBtn" type="submit">Compare</button>
+              <div id="statusCompare" class="status"></div>
+
+              <hr style="margin:16px 0; opacity:.3;" />
+              <h3>Compare against directory (ZIP)</h3>
+              <label>Target directory ZIP
+                <input id="targetZip" type="file" accept=".zip" />
+              </label>
+              <button id="compareDirBtn" type="button">Compare vs Directory</button>
+              <div id="statusCompareDir" class="status"></div>
+              <div id="compareTableWrap" class="hidden" style="overflow:auto; max-height:280px;">
+                <table id="compareTable" style="width:100%; border-collapse:collapse;">
+                  <thead>
+                    <tr>
+                      <th style="text-align:left; border-bottom:1px solid #eee; padding:6px;">File</th>
+                      <th style="text-align:right; border-bottom:1px solid #eee; padding:6px;">Cosine</th>
+                      <th style="text-align:right; border-bottom:1px solid #eee; padding:6px;">Levenshtein</th>
+                      <th style="text-align:center; border-bottom:1px solid #eee; padding:6px;">Duplicate?</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </form>
+          </div>
+
+          <div id="results" class="card hidden">
+            <h2>Results</h2>
+            <div class="grid-3">
+              <div class="kpi">
+                <div class="kpi-num" id="kpiTotal">-</div>
+                <div class="kpi-label">Total</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-num" id="kpiFinal">-</div>
+                <div class="kpi-label">Final</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-num" id="kpiReduction">-</div>
+                <div class="kpi-label">Reduction %</div>
+              </div>
+            </div>
+
+            <canvas id="chart" height="100"></canvas>
+
+            <div id="links" class="links"></div>
+          </div>
+        </div>
+
+        <script src="script.js"></script>
+      </body>
+
+      </html>
+      <!-- Updated API URL to production -->
