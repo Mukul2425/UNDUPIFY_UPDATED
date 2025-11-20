@@ -35,12 +35,7 @@ app.add_middleware(
 )
 
 
-@app.on_event("startup")
-async def startup_event():
-	# Preload the default model to avoid timeout on first request
-	print("Preloading model...")
-	compute_embeddings(["warmup"], "sentence-transformers/all-MiniLM-L6-v2")
-	print("Model preloaded.")
+
 
 @app.get("/health")
 def health():
@@ -52,7 +47,7 @@ async def process(
 	file: UploadFile = File(...),
 	text_column: Optional[str] = Form(None),
 	remove_stopwords: bool = Form(False),
-	model: str = Form("sentence-transformers/all-MiniLM-L6-v2"),
+	model: str = Form("BAAI/bge-small-en-v1.5"),
 	annoy_trees: int = Form(50),
 	ann_k: int = Form(20),
 	cosine_threshold: float = Form(0.9),
@@ -127,7 +122,7 @@ async def compare(
 	query: UploadFile = File(...),
 	target: UploadFile = File(...),
 	remove_stopwords: bool = Form(False),
-	model: str = Form("sentence-transformers/all-MiniLM-L6-v2"),
+	model: str = Form("BAAI/bge-small-en-v1.5"),
 	cosine_threshold: float = Form(0.9),
 	fuzzy_threshold: int = Form(90),
 ):
@@ -178,7 +173,7 @@ async def compare_dir(
 	query: UploadFile = File(...),
 	target_zip: UploadFile = File(...),
 	remove_stopwords: bool = Form(False),
-	model: str = Form("sentence-transformers/all-MiniLM-L6-v2"),
+	model: str = Form("BAAI/bge-small-en-v1.5"),
 	cosine_threshold: float = Form(0.9),
 	fuzzy_threshold: int = Form(90),
 	top_k: int = Form(50),
