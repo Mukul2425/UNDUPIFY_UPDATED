@@ -13,12 +13,17 @@ When you push changes to your GitHub repository:
 ### Frontend (Vercel)
 1. Vercel detects the push to your connected branch
 2. Runs build using `vercel.json` configuration:
-   - Sets root directory to `frontend-new`
+   - Changes to `frontend-new` directory
    - Installs dependencies (`npm install`)
    - Builds the project (`npm run build`)
-   - Serves from `dist` directory
+   - Serves from `frontend-new/dist` directory
 3. Frontend uses default API URL: `https://undupify-updated.onrender.com`
    - (No environment variable needed - it's the default in `config.ts`)
+
+**Alternative (Recommended)**: Set Root Directory in Vercel Dashboard:
+- Go to Project Settings → General
+- Set "Root Directory" to `frontend-new`
+- Then `vercel.json` can use simpler build commands
 
 ### Backend (Render)
 1. Render detects the push (if auto-deploy enabled)
