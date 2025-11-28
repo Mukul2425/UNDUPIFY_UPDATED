@@ -20,6 +20,7 @@ app.add_middleware(
         "https://undupify-updated.onrender.com",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "*"
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -91,6 +92,7 @@ async def process(
     cleaned_path = os.path.join(artifacts_dir, f'cleaned_{timestamp}.csv')
     origs_after_near[['temp_id', '_text']].to_csv(cleaned_path, index=False)
 
+    report_path = os.path.join(artifacts_dir, f'report_{timestamp}.json')
     report = {
         'timestamp': timestamp,
         'input_filename': file.filename,
@@ -106,9 +108,9 @@ async def process(
             'exact_dups': exact_path,
             'near_dups': near_path,
             'cleaned': cleaned_path,
+            'report': report_path,
         }
     }
-    report_path = os.path.join(artifacts_dir, f'report_{timestamp}.json')
     write_report(report, report_path)
 
     return report
@@ -163,7 +165,9 @@ async def compare(
         'target_filename': target.filename,
         'cosine_similarity': float(cos_sim),
         'levenshtein_ratio': int(fuzzy_score),
-        'is_duplicate': bool(cos_sim >= cosine_threshold and fuzzy_score >= fuzzy_threshold)
+        'is_duplicate': bool(cos_sim >= cosine_threshold and fuzzy_score >= fuzzy_threshold),
+        'query_text': q_text,
+        'target_text': t_text
     }
     return result
 

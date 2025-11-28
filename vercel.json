@@ -2,10 +2,12 @@
   "version": 2,
   "name": "undupify",
   "public": true,
+  "rootDirectory": "frontend-new",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "routes": [
     { "handle": "filesystem" },
-    { "src": "/", "dest": "/frontend/index.html" },
-    { "src": "/(.*)", "dest": "/frontend/$1" }
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
 
