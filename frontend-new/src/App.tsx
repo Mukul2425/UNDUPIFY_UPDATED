@@ -7,7 +7,7 @@ import { DiffViewer } from './components/DiffViewer';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'dedupe' | 'compare'>('dedupe');
+  const [activeTab, setActiveTab] = useState<'dedupe' | 'compare'>('compare');
   const [result, setResult] = useState<any>(null);
   const [resultType, setResultType] = useState<'dedupe' | 'single' | 'dir' | null>(null);
 
